@@ -1,5 +1,22 @@
 #include QMK_KEYBOARD_H
 
+uint16_t struggle_timer = 0; // 0 is arbitrary, will get replaced by timestamp
+bool should_struggle = false;
+
+uint16_t wiggle_timer = 0; // 0 is arbitrary, will get replaced by timestamp
+bool should_wiggle = false;
+
+bool is_charging_cutlass = false;
+
+// here enumerate custom keycodes -> name them and assign them a unique number -> use them inside of my keymap
+enum my_keycodes{
+    STRUGGLE = SAFE_RANGE,
+    CUTLASS,
+    WIGGLE,
+    EXAMPLE,
+
+};
+
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     [0] = LAYOUT(
@@ -18,7 +35,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 /* 0
  * ┌──────┬─────────────┬──────┐
- * │  7   │ 8 with beep │  9   │
+ * │  7   │  8          │  9   │
  * ├──────┼─────────────┼──────┤
  * │  4   │LT(1│KC KP 5)│  6   │
  * ├──────┼─────────────┼──────┤
@@ -36,23 +53,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * └──────┴──────┴──────┘
  */
 
-uint16_t struggle_timer = 0; // 0 is arbitrary, will get replaced by timestamp
-bool should_struggle = false;
-
-uint16_t wiggle_timer = 0; // 0 is arbitrary, will get replaced by timestamp
-bool should_wiggle = false;
-
-bool is_charging_cutlass = false;
-
-// here enumerate custom keycodes -> name them and assign them a unique number -> use them inside of my keymap
-enum my_keycodes(
-    STRUGGLE = SAFE_RANGE,
-    CUTLASS,
-    WIGGLE,
-    EXAMPLE,
-
-);
-
 // to my understanding, this is an override of a function that is called before handling a keypress
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {  // keycode contains whatever is in the keymap, record contains the event
     switch (keycode) {
@@ -63,7 +63,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {  // keycode co
                 } else {
                     struggle_timer = timer_read();
                     should_struggle = true;
-                    PLAY_SONG(tone_qwerty);
                 }
             }
             return false;
@@ -75,7 +74,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {  // keycode co
                 } else {
                     wiggle_timer = timer_read();
                     should_wiggle = true;
-                    PLAY_SONG(tone_qwerty);
                 }
             }
             return false;
@@ -93,12 +91,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {  // keycode co
                 is_charging_cutlass = false;
             }
             return false;
-
-        case KC_KP_8: // Play a tone when enter is pressed
-            if (record->event.pressed) {
-                PLAY_SONG(tone_qwerty);
-            }
-            return true;
 
         case EXAMPLE:
             if (record->event.pressed) {  // Do something when pressed
