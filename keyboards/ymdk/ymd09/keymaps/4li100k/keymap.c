@@ -5,7 +5,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [0] = LAYOUT(
         KC_KP_7, KC_KP_8, KC_KP_9,
         KC_KP_4, LT(1, KC_KP_5), KC_KP_6,
-        KC_KP_1, STRUGGLE, CUTLASS
+        WIGGLE, STRUGGLE, CUTLASS
     ),
 
     [1] = LAYOUT(
@@ -22,7 +22,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * ├──────┼─────────────┼──────┤
  * │  4   │LT(1│KC KP 5)│  6   │
  * ├──────┼─────────────┼──────┤
- * │  1   │  STRUGGLE   │CUTLSS│
+ * │WIGGLE│  STRUGGLE   │CUTLSS│
  * └──────┴─────────────┴──────┘
  */
 
@@ -38,12 +38,17 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 uint16_t struggle_timer = 0; // 0 is arbitrary, will get replaced by timestamp
 bool should_struggle = false;
+
+uint16_t wiggle_timer = 0; // 0 is arbitrary, will get replaced by timestamp
+bool should_wiggle = false;
+
 bool is_charging_cutlass = false;
 
 // here enumerate custom keycodes -> name them and assign them a unique number -> use them inside of my keymap
 enum my_keycodes(
     STRUGGLE = SAFE_RANGE,
     CUTLASS,
+    WIGGLE,
     EXAMPLE,
 
 );
@@ -58,6 +63,18 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {  // keycode co
                 } else {
                     struggle_timer = timer_read();
                     should_struggle = true;
+                    PLAY_SONG(tone_qwerty);
+                }
+            }
+            return false;
+
+        case WIGGLE: // dead by daylight wiggle
+            if (record->event.pressed) {
+                if (should_wiggle) {
+                    should_wiggle = false;
+                } else {
+                    wiggle_timer = timer_read();
+                    should_wiggle = true;
                     PLAY_SONG(tone_qwerty);
                 }
             }
@@ -102,8 +119,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {  // keycode co
                 SEND_STRING(":D"); // must be uppercase for literals
 
 
-
-
             } else {  // Do something else when release
             
             }
@@ -114,7 +129,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {  // keycode co
     }
 }
 
-
 void matrix_scan_user(void) { // handles timer
   if (should_struggle) {
     if (timer_elapsed(struggle_timer) > 100) {
@@ -122,6 +136,11 @@ void matrix_scan_user(void) { // handles timer
         struggle_timer = timer_read();
     }
   }
+  if (should_wiggle) {
+    if (timer_elapsed(wiggle_timer) > 100) {
+        tap_code(KC_A);
+        tap_code(KC_D);
+        wiggle_timer = timer_read();
+    }
+  }
 }
-
-
