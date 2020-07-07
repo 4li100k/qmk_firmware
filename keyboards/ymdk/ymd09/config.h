@@ -42,6 +42,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define RGB_DI_PIN E2
 #ifdef RGB_DI_PIN
  #define RGBLED_NUM 9
+ #define RGBLIGHT_LED_MAP { 2, 1, 0, 5, 4, 3, 8, 7, 6 } // reorder LEDs
  #define RGBLIGHT_HUE_STEP 8
  #define RGBLIGHT_SAT_STEP 8
  #define RGBLIGHT_VAL_STEP 8
@@ -62,3 +63,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /* disable these deprecated features by default */
 #define NO_ACTION_MACRO
 #define NO_ACTION_FUNCTION
+
+#define MK_3_SPEED // enables constant speed 3-way selector
+#define MK_C_OFFSET_1 11
+#define MK_C_INTERVAL_1 7 // 16 for 60Hz, 7 for 144Hz
+
+/*#define MOUSEKEY_DELAY 250
+#define MOUSEKEY_INTERVAL 250
+#define MOUSEKEY_MAX_SPEED 255
+#define MOUSEKEY_TIME_TO_MAX 0*/

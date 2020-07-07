@@ -10,9 +10,9 @@ bool is_charging_cutlass = false;
 
 // here enumerate custom keycodes -> name them and assign them a unique number -> use them inside of my keymap
 enum my_keycodes{
-    STRUGGLE = SAFE_RANGE,
-    CUTLASS,
-    WIGGLE,
+    DBD_STRUGGLE = SAFE_RANGE,
+    SOT_CUTLASS,
+    DBD_WIGGLE,
     EXAMPLE,
 
 };
@@ -56,7 +56,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // to my understanding, this is an override of a function that is called before handling a keypress
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {  // keycode contains whatever is in the keymap, record contains the event
     switch (keycode) {
-        case STRUGGLE: // dead by daylight hook struggle
+        case DBD_STRUGGLE: // dead by daylight hook struggle
             if (record->event.pressed) {
                 if (should_struggle) {
                     should_struggle = false;
@@ -67,7 +67,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {  // keycode co
             }
             return false;
 
-        case WIGGLE: // dead by daylight wiggle
+        case DBD_WIGGLE: // dead by daylight wiggle
             if (record->event.pressed) {
                 if (should_wiggle) {
                     should_wiggle = false;
@@ -78,7 +78,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {  // keycode co
             }
             return false;
 
-        case CUTLASS: // sea of thieves charged leap
+        case SOT_CUTLASS: // sea of thieves charged leap
             if (record->event.pressed) {
                 if (is_charging_cutlass) return false;
                 is_charging_cutlass = true;
@@ -122,6 +122,22 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {  // keycode co
 }
 
 void matrix_scan_user(void) { // handles timer
+
+    uint8_t layer = biton32(layer_state);
+
+    // INSERT CODE HERE: turn off all leds
+
+    switch (layer) {
+        case YOUR_LAYER_1:
+            // INSERT CODE HERE: turn on leds that correspond to YOUR_LAYER_1
+            break;
+        case YOUR_LAYER_2:
+            // INSERT CODE HERE: turn on leds that correspond to YOUR_LAYER_2
+            break;
+        // add case for each layer
+    }
+
+
   if (should_struggle) {
     if (timer_elapsed(struggle_timer) > 100) {
         tap_code(KC_SPACE);
