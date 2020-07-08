@@ -10,20 +10,40 @@
 #define _key8 7
 #define _key9 8
 
-uint16_t struggle_timer = 0; // 0 is arbitrary, will get replaced by timestamp
-bool should_struggle = false;
+#define _timers 4
+struct Timer {
+    bool active; // whether to run or not
+    uint16_t time; // for time checking
+    int frequency; // how often should it fire
+    void (*effect)(void); // what should it do
+};
 
-uint16_t wiggle_timer = 0; // 0 is arbitrary, will get replaced by timestamp
-bool should_wiggle = false;
+void dbd_struggle_function(void){
+    tap_code(KC_SPACE);
+};
+struct Timer dbd_struggle = {.frequency = 100, .effect = dbd_struggle_function};
+
+void dbd_wiggle_function(void){
+    tap_code(KC_A);
+    tap_code(KC_D);
+};
+struct Timer dbd_wiggle = {.frequency = 100, .effect = dbd_wiggle_function};
+
+void spam_m1_function(void){
+    tap_code(KC_MS_BTN1);
+};
+struct Timer spam_m1 = {.frequency = 50, .effect = spam_m1_function};
+
+void reset_function(void){
+    reset_keyboard();
+};
+struct Timer reset = {.frequency = 3000, .effect = reset_function};
+
+struct Timer *timers[_timers];
 
 bool is_charging_cutlass = false;
 
 bool reset_is_held = false;
-uint16_t reset_timer = 0;
-bool should_reset = false;
-
-uint16_t spam_m1_timer = 0;
-bool should_spam_m1 = false;
 
 // here enumerate custom keycodes -> name them and assign them a unique number -> use them inside of my keymap
 enum my_keycodes{
@@ -107,28 +127,29 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * └──────┴──────┴──────┘
  */
 
+
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {  // keycode contains whatever is in the keymap, record contains the event
     switch (keycode) {
         case SPAM_M1: // spam mouse1 while held
             if (record->event.pressed) {
-                spam_m1_timer = timer_read();
-                should_spam_m1 = true;
+                spam_m1.active = true;
             } else {
-                should_spam_m1 = false;
+                spam_m1.active = false;
             }
             return false;
 
         case HOLD_RESET: // enter boot mode
             if (record->event.pressed) {
                 if (reset_is_held) {
-                    reset_timer = timer_read();
-                    should_reset = true;
+                    reset.time = timer_read();
+                    reset.active = true;
                 } else {
                     reset_is_held = true;
                 }
             } else {
                 reset_is_held = false;
-                should_reset = false;
+                reset.active = false;
             }
             return false;
 
@@ -140,19 +161,17 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {  // keycode co
 
         case DBD_STRUGGLE: // dead by daylight hook struggle
             if (record->event.pressed) {
-                struggle_timer = timer_read();
-                should_struggle = true;
+                dbd_struggle.active = true;
             } else {
-                should_struggle = false;
+                dbd_struggle.active = false;
             }
             return false;
 
         case DBD_WIGGLE: // dead by daylight wiggle
             if (record->event.pressed) {
-                wiggle_timer = timer_read();
-                should_wiggle = true;
+                dbd_wiggle.active = true;
             } else {
-                should_wiggle = false;
+                dbd_wiggle.active = false;
             }
             return false;
 
@@ -197,9 +216,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {  // keycode co
         default:
             return true;  // Process all other keycodes normally
     }
-}
+};
 
-uint32_t layer_state_set_user(uint32_t state) {
+uint32_t set_led_based_on_layer(uint32_t state) {
 
     rgblight_setrgb(0, 0, 0);
 
@@ -246,68 +265,32 @@ uint32_t layer_state_set_user(uint32_t state) {
 
             break;
     }
-  return state;
-}
+    return state;
+};
+
+void keyboard_post_init_user(void) {
+    set_led_based_on_layer(layer_state);
+    timers[0] = &dbd_struggle;
+    timers[1] = &dbd_wiggle;
+    timers[2] = &spam_m1;
+    timers[3] = &reset;
+    for (int i = 0; i < _timers; i++){
+        timers[i]->active = false;
+        timers[i]->time = timer_read();
+    }
+};
+
+uint32_t layer_state_set_user(uint32_t state) {
+    return set_led_based_on_layer(state);
+};
 
 void matrix_scan_user(void) {
-
-   
-    /*uint8_t layer = biton32(layer_state);
-
-    // INSERT CODE HERE: turn off all leds
-
-    switch (layer) {
-        case 0: // poor
-            rgblight_setrgb_at(32, 32, 32, 8);
-            break;
-        case 1: // common
-            rgblight_setrgb_at(255, 255, 255, 8);
-            break;
-        case 2: // uncommon
-            rgblight_setrgb_at(30, 255, 0, 8);
-            break;
-        case 3: // rare
-            rgblight_setrgb_at(0, 112, 221, 8);
-            break;
-        case 4: // epic
-            rgblight_setrgb_at(163, 0, 238, 8);
-            break;
-        case 5: // legendary
-            rgblight_setrgb_at(255, 64, 0, 8);
-            break;
-        case 6: // mythical
-            rgblight_setrgb_at(255, 0, 0, 8);
-            break;
-        case 7: // mouse
-            rgblight_setrgb_at(0, 0, 0, 8);
-            break;
-        // add case for each layer
-        default: // Fn layer
-            break;
-    }*/
-
-  if (should_spam_m1) {
-    if (timer_elapsed(spam_m1_timer) > 50) { // 20 per second
-        tap_code(KC_MS_BTN1);
-        spam_m1_timer = timer_read();
-    }
-  }
-  if (should_struggle) {
-    if (timer_elapsed(struggle_timer) > 100) { // 10 per second
-        tap_code(KC_SPACE);
-        struggle_timer = timer_read();
-    }
-  }
-  if (should_wiggle) {
-    if (timer_elapsed(wiggle_timer) > 100) { // 10 per second
-        tap_code(KC_A);
-        tap_code(KC_D);
-        wiggle_timer = timer_read();
-    }
-  }
-  if (should_reset) {
-    if (timer_elapsed(reset_timer) > 3000) { // hold for 3 seconds
-        reset_keyboard();
-    }
-  }
-}
+    for (int i = 0; i < _timers; i++){
+        if (timers[i]->active){
+            if (timer_elapsed(timers[i]->time) > timers[i]->frequency){
+                timers[i]->effect();
+                timers[i]->time = timer_read();
+            }
+        }
+    };
+};
