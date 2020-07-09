@@ -117,13 +117,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 };
 
-/* 8
+/* layout visualized
  * ┌──────┬──────┬──────┐
- * │      │      │      │
+ * │ key1 │ key2 │ key3 │
  * ├──────┼──────┼──────┤
- * │      │      │      │
+ * │ key4 │ key5 │ key6 │
  * ├──────┼──────┼──────┤
- * │      │      │  Fn  │
+ * │ key7 │ key8 │ key9 │
  * └──────┴──────┴──────┘
  */
 
@@ -253,6 +253,9 @@ uint32_t set_led_based_on_layer(uint32_t state) {
             rgblight_setrgb_at(255, 0, 0, _key9); // mythical
             break;
         case _key9:
+            for (int i = 0; i < _timers; i++){
+                timers[i]->active = false;
+            }
             rgblight_setrgb_at(32, 32, 32, _key2); // poor
             rgblight_setrgb_at(255, 255, 255, _key3); // common
             rgblight_setrgb_at(30, 255, 0, _key4); // uncommon
@@ -282,6 +285,10 @@ void keyboard_post_init_user(void) {
 
 uint32_t layer_state_set_user(uint32_t state) {
     return set_led_based_on_layer(state);
+};
+
+void suspend_wakeup_init_user(void) {
+    set_led_based_on_layer(layer_state);
 };
 
 void matrix_scan_user(void) {
