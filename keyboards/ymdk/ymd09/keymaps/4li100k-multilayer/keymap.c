@@ -62,43 +62,43 @@ enum my_keycodes{
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     [_key1] = LAYOUT( // top left
-        KC_A,  KC_NO, RANDOM_KEY,
+        KC_NO, KC_NO, KC_NO,
         KC_NO, KC_NO, KC_NO,
         KC_NO, KC_NO, MO(_key9)
     ),
 
     [_key2] = LAYOUT( // top
-        KC_B,  DBD_WIGGLE, DBD_STRUGGLE,
+        KC_NO, DBD_WIGGLE, DBD_STRUGGLE,
         KC_NO, KC_NO,      KC_NO,
         KC_NO, KC_NO,      KC_TRNS
     ),
 
     [_key3] = LAYOUT( // top right
-        KC_C,  KC_NO, SPAM_M1,
+        KC_NO, KC_NO, SPAM_M1,
         KC_NO, KC_NO, KC_NO,
         KC_NO, KC_NO, KC_TRNS
     ),
 
     [_key4] = LAYOUT( // middle left
-        KC_D,  KC_NO, KC_NO,
+        KC_NO, KC_NO, RANDOM_KEY,
         KC_NO, KC_NO, KC_NO,
         KC_NO, KC_NO, KC_TRNS
     ),
 
     [_key5] = LAYOUT( // middle
-        KC_E,  KC_NO, KC_NO,
+        KC_NO, KC_NO, KC_NO,
         KC_NO, KC_NO, KC_NO,
         KC_NO, KC_NO, KC_TRNS
     ),
 
     [_key6] = LAYOUT( // middle right
-        KC_F,  KC_NO, KC_NO,
+        KC_NO, KC_NO, KC_NO,
         KC_NO, KC_NO, KC_NO,
         KC_NO, KC_NO, KC_TRNS
     ),
 
     [_key7] = LAYOUT( // bottom left
-        KC_G,  KC_NO, KC_NO,
+        KC_NO, KC_NO, KC_NO,
         KC_NO, KC_NO, KC_NO,
         KC_NO, KC_NO, KC_TRNS
     ),
@@ -229,16 +229,18 @@ uint32_t set_led_based_on_layer(uint32_t state) {
         case _key2:
             rgblight_setrgb_at(32, 32, 32, _key9); // poor
 
-            rgblight_setrgb_at(32, 32, 32, _key2);
-            rgblight_setrgb_at(32, 32, 32, _key3);
+            rgblight_setrgb_at(32, 32, 32, _key2); // DBD_WIGGLE
+            rgblight_setrgb_at(32, 32, 32, _key3); // DBD_STRUGGLE
             break;
         case _key3:
             rgblight_setrgb_at(255, 255, 255, _key9); // common
 
-            rgblight_setrgb_at(255, 255, 255, _key3);
+            rgblight_setrgb_at(255, 255, 255, _key3); // SPAM_M1
             break;
         case _key4:
             rgblight_setrgb_at(30, 255, 0, _key9); // uncommon
+
+            rgblight_setrgb_at(30, 255, 0, _key3); // RANDOM_KEY
         break;
         case _key5:
             rgblight_setrgb_at(0, 112, 221, _key9); // rare
@@ -251,6 +253,15 @@ uint32_t set_led_based_on_layer(uint32_t state) {
             break;
         case _key8:
             rgblight_setrgb_at(255, 0, 0, _key9); // mythical
+
+            rgblight_setrgb_at(255, 0, 0, _key1); // left click
+            rgblight_setrgb_at(255, 0, 0, _key3); // right click
+            rgblight_setrgb_at(255, 255, 255, _key2); // up arrow
+            rgblight_setrgb_at(255, 255, 255, _key4); // left arrow
+            rgblight_setrgb_at(255, 255, 255, _key5); // down arrow
+            rgblight_setrgb_at(255, 255, 255, _key6); // right arrow
+            //rgblight_setrgb_at(0, 0, 0, _key7); // reset hold
+            //rgblight_setrgb_at(0, 0, 0, _key8); // reset hold
             break;
         case _key9:
             for (int i = 0; i < _timers; i++){
