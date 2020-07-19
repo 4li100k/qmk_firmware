@@ -1,4 +1,5 @@
 #include QMK_KEYBOARD_H
+//#include <print.h>
 
 #define _key1 0
 #define _key2 1
@@ -10,7 +11,15 @@
 #define _key8 7
 #define _key9 8
 
-#define _timers 4
+typedef union {
+    uint32_t raw;
+    struct {
+        uint8_t stored_layer : 8;
+    };
+} user_config_t;
+user_config_t user_config;
+
+#define _timers 5
 struct Timer {
     bool active; // whether to run or not
     uint16_t time; // for time checking
@@ -35,15 +44,23 @@ void spam_m1_function(void){
 struct Timer spam_m1 = {.frequency = 50, .effect = spam_m1_function};
 
 void reset_function(void){
+
     reset_keyboard();
 };
 struct Timer reset = {.frequency = 3000, .effect = reset_function};
+
+int reset_counter = 0;
+void reset_warning_function(void){
+    rgblight_setrgb_at(255, 0, 0, reset_counter);
+    reset_counter++;
+};
+struct Timer reset_warning = {.frequency = 350, .effect = reset_warning_function};
 
 struct Timer *timers[_timers];
 
 bool is_charging_cutlass = false;
 
-bool reset_is_held = false;
+int  resets_held = 0;
 
 // here enumerate custom keycodes -> name them and assign them a unique number -> use them inside of my keymap
 enum my_keycodes{
@@ -127,9 +144,113 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * └──────┴──────┴──────┘
  */
 
+uint32_t set_led_based_on_layer(uint32_t state) {
 
+    rgblight_setrgb(0, 0, 0);
+
+    switch(biton32(state)) {
+        case _key1:
+            
+            //user_config.stored_layer = biton32(state);
+            //eeconfig_update_user(user_config.raw);
+            break;
+        case _key2:
+            rgblight_setrgb_at(32, 32, 32, _key9); // poor
+
+            rgblight_setrgb_at(32, 32, 32, _key2); // DBD_WIGGLE
+            rgblight_setrgb_at(32, 32, 32, _key3); // DBD_STRUGGLE
+            
+            //user_config.stored_layer = biton32(state);
+            //eeconfig_update_user(user_config.raw);
+            break;
+        case _key3:
+            rgblight_setrgb_at(255, 255, 255, _key9); // common
+
+            rgblight_setrgb_at(255, 255, 255, _key3); // SPAM_M1
+            break;
+        case _key4:
+            rgblight_setrgb_at(30, 255, 0, _key9); // uncommon
+
+            rgblight_setrgb_at(30, 255, 0, _key3); // RANDOM_KEY
+        break;
+        case _key5:
+            rgblight_setrgb_at(0, 112, 221, _key9); // rare
+            break;
+        case _key6:
+            rgblight_setrgb_at(163, 0, 238, _key9); // epic
+            break;
+        case _key7:
+            rgblight_setrgb_at(255, 64, 0, _key9); // legendary
+            break;
+        case _key8:
+            rgblight_setrgb_at(255, 0, 0, _key9); // mythical
+
+            rgblight_setrgb_at(255, 0, 0, _key1); // left click
+            rgblight_setrgb_at(255, 0, 0, _key3); // right click
+            rgblight_setrgb_at(255, 255, 255, _key2); // up arrow
+            rgblight_setrgb_at(255, 255, 255, _key4); // left arrow
+            rgblight_setrgb_at(255, 255, 255, _key5); // down arrow
+            rgblight_setrgb_at(255, 255, 255, _key6); // right arrow
+            break;
+        case _key9:
+            for (int i = 0; i < _timers; i++){
+                timers[i]->active = false;
+            }
+            rgblight_setrgb_at(32, 32, 32, _key2); // poor
+            rgblight_setrgb_at(255, 255, 255, _key3); // common
+            rgblight_setrgb_at(30, 255, 0, _key4); // uncommon
+            rgblight_setrgb_at(0, 112, 221, _key5); // rare
+            rgblight_setrgb_at(163, 0, 238, _key6); // epic
+            rgblight_setrgb_at(255, 64, 0, _key7); // legendary
+            rgblight_setrgb_at(255, 0, 0, _key8); // mythical
+            break;
+        default:
+
+            break;
+    }
+    return state;
+};
+
+void rgb_effect_1(void){
+    rgblight_setrgb(0, 0, 0);
+    for (int i = 0; i < 16; i++){
+        SEND_STRING(SS_DELAY(10));
+        rgblight_setrgb_at(16*i, 16*i, 16*i, _key1);
+        rgblight_setrgb_at(16*i, 16*i, 16*i, _key6);
+        rgblight_setrgb_at(16*i, 16*i, 16*i, _key7);
+    }
+    for (int i = 0; i < 16; i++){
+        SEND_STRING(SS_DELAY(10));
+        rgblight_setrgb_at(16*i, 16*i, 16*i, _key2);
+        rgblight_setrgb_at(16*i, 16*i, 16*i, _key5);
+        rgblight_setrgb_at(16*i, 16*i, 16*i, _key8);
+        rgblight_setrgb_at(16*(15-i), 16*(15-i), 16*(15-i), _key1);
+        rgblight_setrgb_at(16*(15-i), 16*(15-i), 16*(15-i), _key6);
+        rgblight_setrgb_at(16*(15-i), 16*(15-i), 16*(15-i), _key7);
+
+    }
+    for (int i = 0; i < 16; i++){
+        SEND_STRING(SS_DELAY(10));
+        rgblight_setrgb_at(16*i, 16*i, 16*i, _key3);
+        rgblight_setrgb_at(16*i, 16*i, 16*i, _key4);
+        rgblight_setrgb_at(16*i, 16*i, 16*i, _key9);
+        rgblight_setrgb_at(16*(15-i), 16*(15-i), 16*(15-i), _key2);
+        rgblight_setrgb_at(16*(15-i), 16*(15-i), 16*(15-i), _key5);
+        rgblight_setrgb_at(16*(15-i), 16*(15-i), 16*(15-i), _key8);
+    }
+    for (int i = 0; i < 16; i++){
+        SEND_STRING(SS_DELAY(10));
+        rgblight_setrgb_at(16*(15-i), 16*(15-i), 16*(15-i), _key3);
+        rgblight_setrgb_at(16*(15-i), 16*(15-i), 16*(15-i), _key4);
+        rgblight_setrgb_at(16*(15-i), 16*(15-i), 16*(15-i), _key9);
+    }
+    set_led_based_on_layer(layer_state);
+}
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {  // keycode contains whatever is in the keymap, record contains the event
+    
+    //uprintf("bit on current layer: %u, bit on eeprom: %u\n", biton32(layer_state), user_config.stored_layer);
+    
     switch (keycode) {
         case SPAM_M1: // spam mouse1 while held
             if (record->event.pressed) {
@@ -141,21 +262,28 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {  // keycode co
 
         case HOLD_RESET: // enter boot mode
             if (record->event.pressed) {
-                if (reset_is_held) {
+                resets_held++;
+                if (resets_held == 2){
+                    rgblight_setrgb(0, 0, 0);
                     reset.time = timer_read();
                     reset.active = true;
-                } else {
-                    reset_is_held = true;
+                    reset_warning.active = true;
                 }
             } else {
-                reset_is_held = false;
-                reset.active = false;
+                resets_held--;
+                if (resets_held == 1){
+                    reset.active = false;
+                    reset_warning.active = false;
+                    reset_counter = 0;
+                    set_led_based_on_layer(layer_state);
+                }
             }
             return false;
 
         case RANDOM_KEY: // random key (0–25 is A–Z, 26–51 is a–z, 52–61 is 0–9, 62 is + and 63 is /)
             if (record->event.pressed) {
                 tap_random_base64();
+                rgb_effect_1();
             }
             return false;
 
@@ -218,91 +346,38 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {  // keycode co
     }
 };
 
-uint32_t set_led_based_on_layer(uint32_t state) {
+void keyboard_post_init_user(void) { // on end of keyboard init
+    //eeconfig_init();
 
-    rgblight_setrgb(0, 0, 0);
+    rgb_effect_1();
 
-    switch(biton32(state)) {
-        case _key1:
-            rgblight_setrgb_at(0, 0, 0, _key9); // blank
-            break;
-        case _key2:
-            rgblight_setrgb_at(32, 32, 32, _key9); // poor
+    //user_config.raw = eeconfig_read_user();
+    //layer_state_set(user_config.stored_layer);
 
-            rgblight_setrgb_at(32, 32, 32, _key2); // DBD_WIGGLE
-            rgblight_setrgb_at(32, 32, 32, _key3); // DBD_STRUGGLE
-            break;
-        case _key3:
-            rgblight_setrgb_at(255, 255, 255, _key9); // common
-
-            rgblight_setrgb_at(255, 255, 255, _key3); // SPAM_M1
-            break;
-        case _key4:
-            rgblight_setrgb_at(30, 255, 0, _key9); // uncommon
-
-            rgblight_setrgb_at(30, 255, 0, _key3); // RANDOM_KEY
-        break;
-        case _key5:
-            rgblight_setrgb_at(0, 112, 221, _key9); // rare
-            break;
-        case _key6:
-            rgblight_setrgb_at(163, 0, 238, _key9); // epic
-            break;
-        case _key7:
-            rgblight_setrgb_at(255, 64, 0, _key9); // legendary
-            break;
-        case _key8:
-            rgblight_setrgb_at(255, 0, 0, _key9); // mythical
-
-            rgblight_setrgb_at(255, 0, 0, _key1); // left click
-            rgblight_setrgb_at(255, 0, 0, _key3); // right click
-            rgblight_setrgb_at(255, 255, 255, _key2); // up arrow
-            rgblight_setrgb_at(255, 255, 255, _key4); // left arrow
-            rgblight_setrgb_at(255, 255, 255, _key5); // down arrow
-            rgblight_setrgb_at(255, 255, 255, _key6); // right arrow
-            //rgblight_setrgb_at(0, 0, 0, _key7); // reset hold
-            //rgblight_setrgb_at(0, 0, 0, _key8); // reset hold
-            break;
-        case _key9:
-            for (int i = 0; i < _timers; i++){
-                timers[i]->active = false;
-            }
-            rgblight_setrgb_at(32, 32, 32, _key2); // poor
-            rgblight_setrgb_at(255, 255, 255, _key3); // common
-            rgblight_setrgb_at(30, 255, 0, _key4); // uncommon
-            rgblight_setrgb_at(0, 112, 221, _key5); // rare
-            rgblight_setrgb_at(163, 0, 238, _key6); // epic
-            rgblight_setrgb_at(255, 64, 0, _key7); // legendary
-            rgblight_setrgb_at(255, 0, 0, _key8); // mythical
-            break;
-        default:
-
-            break;
-    }
-    return state;
-};
-
-void keyboard_post_init_user(void) {
-    set_led_based_on_layer(layer_state);
     timers[0] = &dbd_struggle;
     timers[1] = &dbd_wiggle;
     timers[2] = &spam_m1;
     timers[3] = &reset;
+    timers[4] = &reset_warning;
     for (int i = 0; i < _timers; i++){
         timers[i]->active = false;
         timers[i]->time = timer_read();
     }
 };
 
-uint32_t layer_state_set_user(uint32_t state) {
+//void matrix_init_user(void) {
+  //user initialization
+//}
+
+uint32_t layer_state_set_user(uint32_t state) { // on layer change
     return set_led_based_on_layer(state);
 };
 
-void suspend_wakeup_init_user(void) {
+void suspend_wakeup_init_user(void) { // on PC wakeup
     set_led_based_on_layer(layer_state);
 };
 
-void matrix_scan_user(void) {
+void matrix_scan_user(void) { // on matrix scan
     for (int i = 0; i < _timers; i++){
         if (timers[i]->active){
             if (timer_elapsed(timers[i]->time) > timers[i]->frequency){
@@ -310,5 +385,13 @@ void matrix_scan_user(void) {
                 timers[i]->time = timer_read();
             }
         }
-    };
+    }
+};
+
+void eeconfig_init_user(void) {  // on eeprom reset
+    user_config.raw = 0;
+    user_config.stored_layer = 0; // We want this enabled by default
+    eeconfig_update_user(user_config.raw); // Write default value to EEPROM now
+
+    rgblight_sethsv(0, 0, 0);
 };
