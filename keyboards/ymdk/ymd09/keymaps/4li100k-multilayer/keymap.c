@@ -44,7 +44,6 @@ void spam_m1_function(void){
 struct Timer spam_m1 = {.frequency = 50, .effect = spam_m1_function};
 
 void reset_function(void){
-
     reset_keyboard();
 };
 struct Timer reset = {.frequency = 3000, .effect = reset_function};
