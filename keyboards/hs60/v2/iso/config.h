@@ -144,3 +144,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // VIA lighting is handled by the keyboard-level code
 #define VIA_CUSTOM_LIGHTING_ENABLE
+
+#define MK_3_SPEED // enables constant speed 3-way selector
+#define MK_C_OFFSET_1 8
+#define MK_C_INTERVAL_1 7 // 16 for 60Hz, 7 for 144Hz
