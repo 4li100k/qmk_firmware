@@ -148,3 +148,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MK_3_SPEED // enables constant speed 3-way selector
 #define MK_C_OFFSET_1 8
 #define MK_C_INTERVAL_1 7 // 16 for 60Hz, 7 for 144Hz
+
+#define TAPPING_TERM 200

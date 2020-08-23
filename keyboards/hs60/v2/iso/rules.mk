@@ -20,6 +20,7 @@ NKRO_ENABLE = yes                  # USB Nkey Rollover
 AUDIO_ENABLE = no                  # Audio output on port C6
 NO_USB_STARTUP_CHECK = no          # Disable initialization only when usb is plugged in
 #SERIAL_LINK_ENABLE = yes
+TAP_DANCE_ENABLE = yes
 
 CIE1931_CURVE = yes
 
